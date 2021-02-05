@@ -6,30 +6,43 @@ namespace TestNinja.Mocking
 {
     public static class BookingHelper
     {
-        public static string OverlappingBookingsExist(Booking booking)
+
+        public static string OverlappingBookingsExist(Booking booking, IBookingRepository bookingRepository)
         {
             if (booking.Status == "Cancelled")
                 return string.Empty;
 
-            var unitOfWork = new UnitOfWork();
-            var bookings =
-                unitOfWork.Query<Booking>()
-                    .Where(
-                        b => b.Id != booking.Id && b.Status != "Cancelled");
+
+            //var unitOfWork = new UnitOfWork();
+            //Refactorizamos esta dependencia externa en una clase a parte
+            //var bookings =
+            //    unitOfWork.Query<Booking>()
+            //        .Where(
+            //            b => b.Id != booking.Id && b.Status != "Cancelled");
+
+            var bookings = bookingRepository.GetActiveBookings(booking.Id);
 
             var overlappingBooking =
                 bookings.FirstOrDefault(
                     b =>
-                        booking.ArrivalDate >= b.ArrivalDate
-                        && booking.ArrivalDate < b.DepartureDate
-                        || booking.DepartureDate > b.ArrivalDate
-                        && booking.DepartureDate <= b.DepartureDate);
+                        booking.ArrivalDate < b.DepartureDate &&
+                        b.ArrivalDate < booking.DepartureDate
+                        //booking.ArrivalDate >= b.ArrivalDate
+                        //&& booking.ArrivalDate < b.DepartureDate
+                        //|| booking.DepartureDate > b.ArrivalDate
+                        //&& booking.DepartureDate <= b.DepartureDate  // ESTE CODIGO TIENE BUGS DETECTADOS POR EL UNIT TESTING
+                        );
 
             return overlappingBooking == null ? string.Empty : overlappingBooking.Reference;
         }
     }
 
-    public class UnitOfWork
+    public interface IUnitOfWork
+    {
+        IQueryable<T> Query<T>();
+    }
+
+    public class UnitOfWork : IUnitOfWork
     {
         public IQueryable<T> Query<T>()
         {

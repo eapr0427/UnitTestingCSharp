@@ -21,7 +21,6 @@ namespace TestNinja.UnitTests
 
             //Assert
             Assert.IsTrue(result);
-
         }
 
         [Test]
@@ -33,9 +32,9 @@ namespace TestNinja.UnitTests
             //Act
             var result = reservation.CanBeCancelledBy(user);
             //Assert
-            Assert.IsTrue(result);
+            //Assert.IsTrue(result);
             Assert.That(result, Is.True);
-            Assert.That(result == true);
+            //Assert.That(result == true);
         }
 
         [Test]

@@ -4,18 +4,20 @@ namespace TestNinja.Mocking
 {
     public class EmployeeController
     {
-        private EmployeeContext _db;
+        private readonly IEmployeeStorage _employeeStorage;
 
-        public EmployeeController()
+        public EmployeeController(IEmployeeStorage employeeStorage)
         {
-            _db = new EmployeeContext();
+            //_db = new EmployeeContext();
+            this._employeeStorage = employeeStorage;
         }
 
         public ActionResult DeleteEmployee(int id)
         {
-            var employee = _db.Employees.Find(id);
-            _db.Employees.Remove(employee);
-            _db.SaveChanges();
+            // Encapsulamos en una clase externa el código que toca un recurso externo. 
+            // Esto con el fin de extraer una interface con el fin de mockearla en las pruebas unitarias
+            _employeeStorage.DeleteEmployee(id);
+
             return RedirectToAction("Employees");
         }
 
